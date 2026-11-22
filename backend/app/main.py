@@ -35,17 +35,23 @@ def error_response(
     message: str,
     correlation_id: str | None,
 ):
-    """Create an error response matching the OpenAPI ErrorResponse schema."""
+    """Create a standard API error response with correlation ID header."""
     body = {
         "status": status_code,
         "code": code,
         "message": message,
     }
 
+    headers = {}
     if correlation_id:
         body["correlation_id"] = correlation_id
+        headers["X-Correlation-ID"] = correlation_id
 
-    return JSONResponse(status_code=status_code, content=body)
+    return JSONResponse(
+        status_code=status_code,
+        content=body,
+        headers=headers,
+    )
 
 
 @asynccontextmanager
@@ -82,32 +88,46 @@ def create_application() -> FastAPI:
         request: Request,
         exc: StarletteHTTPException,
     ):
-        """Convert HTTP errors into the standard API error format."""
+        """Convert HTTP errors into safe, standard API error responses."""
         correlation_id = getattr(request.state, "correlation_id", None)
 
-        if isinstance(exc.detail, dict):
-            code = exc.detail.get("code", "HTTP_ERROR")
-            message = exc.detail.get("message", "The request could not be completed.")
-            correlation_id = exc.detail.get("correlation_id") or correlation_id
+        code_by_status = {
+            400: "BAD_REQUEST",
+            401: "UNAUTHORIZED",
+            403: "FORBIDDEN",
+            404: "RESOURCE_NOT_FOUND",
+            409: "RESOURCE_CONFLICT",
+            422: "VALIDATION_ERROR",
+        }
+
+        message_by_status = {
+            400: "The request is invalid.",
+            401: "Authentication is required.",
+            403: "You do not have permission to perform this action.",
+            404: "The requested resource was not found.",
+            409: "The request conflicts with the current resource state.",
+            422: "Request validation failed. Please check the supplied data.",
+        }
+
+        safe_messages = {
+            "Lead not found.",
+            "Email not found.",
+            "Real email verification provider is not configured.",
+        }
+
+        detail = exc.detail
+
+        if isinstance(detail, str) and detail in safe_messages:
+            message = detail
         else:
-            code_by_status = {
-                400: "BAD_REQUEST",
-                401: "UNAUTHORIZED",
-                403: "FORBIDDEN",
-                404: "RESOURCE_NOT_FOUND",
-                409: "RESOURCE_CONFLICT",
-                422: "VALIDATION_ERROR",
-            }
-            code = code_by_status.get(exc.status_code, "HTTP_ERROR")
-            message = (
-                exc.detail
-                if isinstance(exc.detail, str)
-                else "The request could not be completed."
+            message = message_by_status.get(
+                exc.status_code,
+                "The request could not be completed.",
             )
 
         return error_response(
             status_code=exc.status_code,
-            code=code,
+            code=code_by_status.get(exc.status_code, "HTTP_ERROR"),
             message=message,
             correlation_id=correlation_id,
         )
@@ -144,6 +164,7 @@ def create_application() -> FastAPI:
     )
 
     api_v1_prefix = "/api/v1"
+
     app.include_router(health_router, prefix=api_v1_prefix)
     app.include_router(auth_router, prefix=api_v1_prefix)
     app.include_router(leads_router, prefix=api_v1_prefix)
