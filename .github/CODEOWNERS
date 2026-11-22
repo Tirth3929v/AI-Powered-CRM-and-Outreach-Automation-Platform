@@ -4,32 +4,32 @@
 # ==============================================================================
 
 # Default fallback for repository leads
-*                                   @Akshay-Sharma777 @harshitaraghuwanshi812
+*                                   @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
 
 # Shared configuration and contracts (LEADS ONLY)
-/package.json                       @Akshay-Sharma777 @harshitaraghuwanshi812
-/docker-compose.yml                 @Akshay-Sharma777 @harshitaraghuwanshi812
-/.env.example                       @Akshay-Sharma777 @harshitaraghuwanshi812
-/.github/                           @Akshay-Sharma777 @harshitaraghuwanshi812
-/contracts/                         @Akshay-Sharma777 @harshitaraghuwanshi812
-/backend/requirements.txt           @Akshay-Sharma777 @harshitaraghuwanshi812
-/backend/Dockerfile                 @Akshay-Sharma777 @harshitaraghuwanshi812
-/frontend/package.json              @Akshay-Sharma777 @harshitaraghuwanshi812
+/package.json                       @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/docker-compose.yml                 @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/.env.example                       @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/.github/                           @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/contracts/                         @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/backend/requirements.txt           @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/backend/Dockerfile                 @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/frontend/package.json              @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
 
 # Frontend Team
-/frontend/                          @Akshay-Sharma777 @harshitaraghuwanshi812
-/docs/frontend-guide.md             @Akshay-Sharma777 @harshitaraghuwanshi812
+/frontend/                          @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/docs/frontend-guide.md             @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
 
 # Backend Core & Data Team
-/backend/                           @Akshay-Sharma777 @harshitaraghuwanshi812
-/database/                          @Akshay-Sharma777 @harshitaraghuwanshi812
-/docs/backend-guide.md              @Akshay-Sharma777 @harshitaraghuwanshi812
+/backend/                           @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/database/                          @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/docs/backend-guide.md              @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
 
 # Automation & Scrapers Team
-/automation/                        @Akshay-Sharma777 @harshitaraghuwanshi812
-/infra/                             @Akshay-Sharma777 @harshitaraghuwanshi812
-/docs/error-playbook.md             @Akshay-Sharma777 @harshitaraghuwanshi812
+/automation/                        @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/infra/                             @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/docs/error-playbook.md             @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
 
 # AI Team
-/ai/                                @Akshay-Sharma777 @harshitaraghuwanshi812
-/docs/ai-guide.md                   @Akshay-Sharma777 @harshitaraghuwanshi812
+/ai/                                @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v
+/docs/ai-guide.md                   @Akshay-Sharma777 @harshitaraghuwanshi812 @poojahossur @Tirth3929v

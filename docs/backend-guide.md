@@ -127,3 +127,35 @@ pytest backend/tests
 - Redacts sensitive information, including email addresses, phone numbers, and authentication tokens, before persistence.
 - Uses the caller's database transaction; the service does not commit or roll back independently.
 - **Tests:** Run `python -m pytest backend/tests -v`.
+
+## Lead List API: Pagination, Filtering & Sorting (BE-30)
+
+**Endpoint:** `GET /api/v1/leads`
+
+The endpoint returns a paginated response containing `items`, `total`, `page`, `page_size`, and `total_pages`.
+
+### Pagination
+- `page`: 1-based page number; defaults to `1`; minimum value is `1`.
+- `page_size`: defaults to `25`; allowed range is `1`–`100`.
+- Offset is calculated as `(page - 1) * page_size`.
+- `total` represents the number of records matching the filters.
+
+### Filters
+The endpoint supports these optional query parameters:
+- `source`
+- `experience_min` and `experience_max` (non-negative values; minimum must not exceed maximum)
+- `score_band`: `high`, `medium`, `low`, or `suppressed`
+- `status`: `new`, `needs_enrichment`, `verified`, `draft_ready`, `approved`, `sent`, or `closed`
+- `assigned_to`
+- `search`: searches lead titles and organization names.
+
+### Sorting
+- `sort_by` defaults to `discovered_at`.
+- Supported fields: `discovered_at`, `score`, `experience_min`, `experience_max`, `organization_name`, and `title`.
+- `sort_order` defaults to `desc`; supported values are `asc` and `desc`.
+- Sorting uses predefined SQL column and direction allowlists. `o.id ASC` is used as a stable tie-breaker.
+
+### SQL Safety
+- User-provided filter values are passed through parameterized SQL queries.
+- Sort column names and directions are selected only from predefined allowlists.
+- Never interpolate raw user input into SQL statements.

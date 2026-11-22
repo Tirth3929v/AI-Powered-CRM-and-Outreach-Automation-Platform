@@ -66,7 +66,17 @@ export function LeadFilters({
         return () => window.removeEventListener('popstate', restoreFromUrl)
     }, [onFiltersChange, onSearchChange, setFilters])
 
-    const sources = [...new Set(leads.map((lead) => lead.source_name).filter(Boolean))]
+    const APPROVED_SOURCES = [
+        'Internshala',
+        'Naukri Freshers',
+        'Devpost & Unstop',
+        'College TPO Directories',
+        'YC Workatastartup',
+        'Apna Jobs',
+        'WorkIndia'
+    ]
+    const extractedSources = [...new Set(leads.map((lead) => lead.source_name).filter(Boolean))]
+    const sources = extractedSources.length > 0 ? extractedSources : APPROVED_SOURCES
     const assignees = [...new Set(leads.map((lead) => lead.assigned_to).filter(Boolean))]
 
     function updateFilter(name, value) {

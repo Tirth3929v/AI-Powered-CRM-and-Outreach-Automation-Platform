@@ -180,3 +180,35 @@ export async function listLeads({
     throw err
   }
 }
+
+/**
+ * Retrieve complete details for a specific lead (FE-11).
+ *
+ * @param {string} id
+ * @returns {Promise<Object>}
+
+/**
+ * Retrieve complete details for a specific lead (FE-11).
+ *
+ * @param {string} id
+ * @returns {Promise<Object>}
+ */
+export async function getLeadById(id) {
+  if (USE_MOCKS) {
+    const found = MOCK_DATASET.find((l) => l.id === id) || MOCK_LEADS.find((l) => l.id === id)
+    if (!found) {
+      throw new Error(`Lead '${id}' not found`)
+    }
+    return found
+  }
+
+  try {
+    return await apiClient(`/leads/${id}`)
+  } catch (err) {
+    if (err?.code === 'NETWORK_ERROR') {
+      const found = MOCK_DATASET.find((l) => l.id === id) || MOCK_LEADS.find((l) => l.id === id)
+      if (found) return found
+    }
+    throw err
+  }
+}

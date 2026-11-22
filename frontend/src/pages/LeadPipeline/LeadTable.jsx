@@ -238,11 +238,11 @@ export function LeadTable({
     setPage(1)
   }
 
-  function handleRowKeyDown(e, leadId) {
+  function handleRowKeyDown(e, leadId, lead) {
     if (e.target !== e.currentTarget) return
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      onSelect?.(leadId)
+      onSelect?.(leadId, lead)
     }
   }
 
@@ -319,8 +319,8 @@ export function LeadTable({
                     className="lt-row"
                     tabIndex={0}
                     data-selected={selectedId === lead.id}
-                    onClick={() => onSelect?.(lead.id)}
-                    onKeyDown={(e) => handleRowKeyDown(e, lead.id)}
+                    onClick={() => onSelect?.(lead.id, lead)}
+                    onKeyDown={(e) => handleRowKeyDown(e, lead.id, lead)}
                   >
                     <td className="lt-td" style={{ fontWeight: 600 }}>
                       {lead.organization_name}

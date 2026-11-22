@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     DAILY_CREDIT_BUDGET: int = Field(default=50)
     MONTHLY_CREDIT_BUDGET: int = Field(default=1000)
     ENRICHMENT_SANDBOX: bool = Field(default=True)
+    EMAIL_VERIFIER_PROVIDER: str = Field(default="mock")
+    EMAIL_VERIFIER_API_KEY: Optional[str] = Field(default=None)
     EMAIL_VERIFIER_SANDBOX: bool = Field(default=True)
     EMAIL_SANDBOX_MODE: bool = Field(default=True)
     DAILY_SEND_LIMIT: int = Field(default=100)

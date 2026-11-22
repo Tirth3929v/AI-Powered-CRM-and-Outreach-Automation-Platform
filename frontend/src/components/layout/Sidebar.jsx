@@ -11,6 +11,7 @@ export function Sidebar({ userRole = 'admin' }) {
     { label: 'Lead Pipeline', path: '/pipeline', action: 'view_pipeline' },
     { label: 'My Leads', path: '/my-leads', action: 'claim_leads' },
     { label: 'Enrichment Queue', path: '/enrichment', action: 'enrich_contact' },
+    { label: 'Enrichment History', path: '/enrichment/history', action: 'enrich_contact' },
     { label: 'Campaign Manager', path: '/campaigns', action: 'review_drafts' },
     { label: 'Suppression List', path: '/suppression', action: 'manage_suppression' },
     { label: 'System Health', path: '/system-health', action: 'view_system_health' },
@@ -48,6 +49,7 @@ export function Sidebar({ userRole = 'admin' }) {
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.path === '/enrichment'}
             style={({ isActive }) => ({
               display: 'block',
               padding: '10px 12px',

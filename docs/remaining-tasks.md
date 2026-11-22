@@ -24,7 +24,7 @@
 
 ### FE-09. Lead Pipeline Table
 - **Domain**: Frontend
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `frontend/src/pages/LeadPipeline/LeadTable.jsx`, `frontend/src/api/leads.js`
 - **Label**: `frontend`
 - **Size**: L (Large ~1 week)
@@ -40,16 +40,16 @@
 - Do not build filter dropdowns (covered in `FE-10`), detail drawer content (`FE-11`), or Kanban toggle (`FE-12`).
 
 #### Acceptance Criteria
-- [ ] Loads and pages smoothly against mock leads.
-- [ ] Clicking column header triggers ascending/descending sort.
-- [ ] Clicking a row triggers `onSelect(leadId)`.
-- [ ] Table scrolls horizontally on mobile/tablet without breaking the viewport layout.
+- [x] Loads and pages smoothly against mock leads.
+- [x] Clicking column header triggers ascending/descending sort.
+- [x] Clicking a row triggers `onSelect(leadId)`.
+- [x] Table scrolls horizontally on mobile/tablet without breaking the viewport layout.
 
 ---
 
 ### FE-10. Filters and Search Controls
 - **Domain**: Frontend
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `frontend/src/pages/LeadPipeline/LeadFilters.jsx`, `frontend/src/store/filters.js`
 - **Label**: `frontend`
 - **Size**: M (Medium ~2-3 days)
@@ -65,15 +65,15 @@
 - No saving custom filter presets to localStorage/database.
 
 #### Acceptance Criteria
-- [ ] Typing in search waits 300ms before triggering filter refresh.
-- [ ] Reloading the browser page preserves the exact URL filter query parameters.
-- [ ] Clear All button resets all controls back to default state.
+- [x] Typing in search waits 300ms before triggering filter refresh.
+- [x] Reloading the browser page preserves the exact URL filter query parameters.
+- [x] Clear All button resets all controls back to default state.
 
 ---
 
 ### FE-11. Lead Detail Drawer
 - **Domain**: Frontend
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `frontend/src/pages/LeadPipeline/LeadDetailDrawer.jsx`
 - **Label**: `frontend`
 - **Size**: M (Medium ~2-3 days)
@@ -91,9 +91,9 @@
 - No editing of lead details or contacting recipients from this drawer.
 
 #### Acceptance Criteria
-- [ ] Opens smoothly when a table row is clicked; closes on Escape key or close button.
-- [ ] Missing optional fields render a dash (`—`), never `undefined` or `null`.
-- [ ] Outbound source URL opens safely in a new tab (`target="_blank" rel="noreferrer"`).
+- [x] Opens smoothly when a table row is clicked; closes on Escape key or close button.
+- [x] Missing optional fields render a dash (`—`), never `undefined` or `null`.
+- [x] Outbound source URL opens safely in a new tab (`target="_blank" rel="noreferrer"`).
 
 ---
 
@@ -228,7 +228,7 @@
 
 ### FE-20. Credit Usage Meter Widget
 - **Domain**: Frontend
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `frontend/src/components/credits/CreditMeter.jsx`
 - **Label**: `frontend`
 - **Size**: S (Small ~1 day)
@@ -241,8 +241,8 @@
 - Color shifts: Normal (Blue/Green) < 80%, Warning (Amber) >= 80%, Danger (Red) at 100%.
 
 #### Acceptance Criteria
-- [ ] Handles zero budget gracefully without division by zero (`NaN%`).
-- [ ] ARIA progressbar attributes included for screen readers.
+- [x] Handles zero budget gracefully without division by zero (`NaN%`).
+- [x] ARIA progressbar attributes included for screen readers.
 
 ---
 
@@ -524,7 +524,7 @@
 
 ### BE-15. Leads Repository in Raw Parameterised SQL
 - **Domain**: Backend Core
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `backend/app/repositories/leads_repo.py`
 - **Label**: `backend-core`
 - **Size**: M (Medium ~2-3 days)
@@ -541,14 +541,14 @@
 - No ORMs or string concatenation (`f"SELECT..."` is strictly forbidden).
 
 #### Acceptance Criteria
-- [ ] SQL queries use tuple parameters exclusively.
-- [ ] Query execution plan (`EXPLAIN`) is included in the PR description.
+- [x] SQL queries use tuple parameters exclusively.
+- [x] Query execution plan (`EXPLAIN`) is included in the PR description.
 
 ---
 
 ### BE-16. Leads Endpoints (`GET /leads` & `GET /leads/{id}`)
 - **Domain**: Backend Core
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `backend/app/api/v1/leads.py`
 - **Label**: `backend-core`
 - **Size**: M (Medium ~2-3 days)
@@ -560,14 +560,14 @@
 - Return structured response adhering to `contracts/openapi.yaml`.
 
 #### Acceptance Criteria
-- [ ] All query parameters from OpenAPI contract work as expected.
-- [ ] Non-existent ID returns 404 with standard error envelope.
+- [x] All query parameters from OpenAPI contract work as expected.
+- [x] Non-existent ID returns 404 with standard error envelope.
 
 ---
 
 ### BE-17. Claim and Assign Endpoint
 - **Domain**: Backend Core
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `backend/app/api/v1/leads.py`
 - **Label**: `backend-core`
 - **Size**: S (Small ~1 day)
@@ -580,14 +580,14 @@
 - Record action in `audit_logs`.
 
 #### Acceptance Criteria
-- [ ] Two simultaneous claim requests: one succeeds (200), the second receives 409 Conflict.
-- [ ] Researchers can only claim leads for themselves.
+- [x] Two simultaneous claim requests: one succeeds (200), the second receives 409 Conflict.
+- [x] Researchers can only claim leads for themselves.
 
 ---
 
 ### BE-18. Duplicate Detection Service
 - **Domain**: Backend Core
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `backend/app/services/dedup_service.py`
 - **Label**: `backend-core`
 - **Size**: M (Medium ~2-3 days)
@@ -603,13 +603,13 @@
 - Never merge opportunities automatically based on name similarity alone.
 
 #### Acceptance Criteria
-- [ ] Minimum 15 unit tests covering exact matches and near-misses that must NOT be merged.
+- [x] Minimum 15 unit tests covering exact matches and near-misses that must NOT be merged.
 
 ---
 
 ### BE-19. Audit Log Writer
 - **Domain**: Backend Core
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `backend/app/services/audit_service.py`
 - **Label**: `backend-core`
 - **Size**: S (Small ~1 day)
@@ -620,14 +620,14 @@
 - Mask emails, phone numbers, and auth tokens before persisting details JSONB.
 
 #### Acceptance Criteria
-- [ ] A rolled-back transaction creates no audit row.
-- [ ] Test verifies personal email inside `details` is redacted.
+- [x] A rolled-back transaction creates no audit row.
+- [x] Test verifies personal email inside `details` is redacted.
 
 ---
 
 ### BE-21. Scraper Base Class & Exception Wrapper
 - **Domain**: Backend Automation
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `automation/scrapers/base.py`
 - **Label**: `automation`
 - **Size**: M (Medium ~2-3 days)
@@ -640,14 +640,14 @@
 - Inject random delay between requests (1–3s).
 
 #### Acceptance Criteria
-- [ ] Test fixture simulates timeout, selector change, and 429 response to verify structured error handling.
-- [ ] HTTP 429 immediately stops further requests for that source.
+- [x] Test fixture simulates timeout, selector change, and 429 response to verify structured error handling.
+- [x] HTTP 429 immediately stops further requests for that source.
 
 ---
 
 ### BE-22. Approved Source Registry
 - **Domain**: Backend Automation
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `automation/scrapers/registry.py`
 - **Label**: `automation`
 - **Size**: S (Small ~1 day)
@@ -657,8 +657,8 @@
 - Dynamic loader fetching enabled sources from the `sources` table and mapping each to its scraper class.
 
 #### Acceptance Criteria
-- [ ] A disabled or unlisted source can never be executed.
-- [ ] Unrecognized source key throws a clean configuration error.
+- [x] A disabled or unlisted source can never be executed.
+- [x] Unrecognized source key throws a clean configuration error.
 
 ---
 
@@ -1262,7 +1262,7 @@
 
 ### AI-05. Experience Range Parser (Hard Cases)
 - **Domain**: AI
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `ai/extraction/experience_parser.py`
 - **Label**: `ai`
 - **Size**: M (Medium ~2-3 days)
@@ -1273,14 +1273,14 @@
 - Regex rules first; optional Gemini Flash fallback when rule confidence is below 0.6.
 
 #### Acceptance Criteria
-- [ ] 40 test phrases pass in rules-only mode.
-- [ ] AI fallback is disabled by default and tested with mock client.
+- [x] 40 test phrases pass in rules-only mode.
+- [x] AI fallback is disabled by default and tested with mock client.
 
 ---
 
 ### AI-06. Lead Category Classifier
 - **Domain**: AI
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `ai/extraction/category_classifier.py`
 - **Label**: `ai`
 - **Size**: S (Small ~1 day)
@@ -1290,7 +1290,7 @@
 - Classify opportunity into: `job`, `startup`, `internship`, `hackathon`, `college_tpo` with confidence score.
 
 #### Acceptance Criteria
-- [ ] Correctly classifies at least 90% of fixtures in `ai/fixtures/jobs/sample_jobs.json`.
+- [x] Correctly classifies at least 90% of fixtures in `ai/fixtures/jobs/sample_jobs.json`.
 
 ---
 
@@ -1316,7 +1316,7 @@
 
 ### AI-11. Tone Variants Prompts
 - **Domain**: AI
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `ai/prompts/tone_hr.md`, `ai/prompts/tone_tpo.md`, `ai/prompts/tone_founder.md`
 - **Label**: `ai`
 - **Size**: M (Medium ~2-3 days)
@@ -1330,8 +1330,8 @@
 - Include explicit "DO" and "DO NOT" examples for each.
 
 #### Acceptance Criteria
-- [ ] Sample outputs for each tone saved in `ai/evals/samples/`.
-- [ ] Each sample stays within 80 to 150 words.
+- [x] Sample outputs for each tone saved in `ai/evals/samples/`.
+- [x] Each sample stays within 80 to 150 words.
 
 ---
 
@@ -1360,7 +1360,7 @@
 
 ### AI-13. Outreach Safety & Compliance Checks
 - **Domain**: AI
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `ai/validators/safety_checks.py`
 - **Label**: `ai`
 - **Size**: M (Medium ~2-3 days)
@@ -1375,13 +1375,13 @@
   - Detect links or phone numbers not present in verified facts.
 
 #### Acceptance Criteria
-- [ ] Each rule has one passing and one failing test case.
+- [x] Each rule has one passing and one failing test case.
 
 ---
 
 ### AI-15. Draft Quality Evaluation Harness
 - **Domain**: AI
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `ai/evals/run_eval.py`, `ai/evals/cases/test_cases.json`
 - **Label**: `ai`
 - **Size**: M (Medium ~2-3 days)
@@ -1392,7 +1392,7 @@
 - Script outputs formatted summary table and exports results to `eval_results.csv`.
 
 #### Acceptance Criteria
-- [ ] Runs fully offline in mock mode and online with a live API key.
+- [x] Runs fully offline in mock mode and online with a live API key.
 
 ---
 
@@ -1473,7 +1473,7 @@
 
 ### AI-21. Prompt Catalog Documentation
 - **Domain**: AI
-- **Assigned to**: TBD
+- **Assigned to**: Completed & Verified
 - **Files**: `docs/ai-guide.md`
 - **Label**: `ai`, `docs`
 - **Size**: S (Small ~1 day)
@@ -1483,4 +1483,4 @@
 - Catalog documenting every prompt: Template name, active version, purpose, input variables, output schema, and safe modification procedures.
 
 #### Acceptance Criteria
-- [ ] Every file in `ai/prompts/` is documented.
+- [x] Every file in `ai/prompts/` is documented.

@@ -1,12 +1,13 @@
-import { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
+import { MOCK_LEADS } from '../../mocks/sampleLeads'
 
 const displayValue = (value) => {
   return value !== null && value !== undefined && value !== ''
-    ? value
+    ? String(value)
     : '—'
 }
 
-export default function LeadDetailDrawer({ lead, isOpen, onClose }) {
+export default function LeadDetailDrawer({ lead: rawLead, isOpen, onClose }) {
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
@@ -20,6 +21,23 @@ export default function LeadDetailDrawer({ lead, isOpen, onClose }) {
       window.removeEventListener('keydown', handleEscape)
     }
   }, [onClose])
+
+  const lead = useMemo(() => {
+    if (!rawLead) return null
+    if (typeof rawLead === 'object') return rawLead
+    return MOCK_LEADS.find((item) => item.id === rawLead) || { id: rawLead, title: rawLead }
+  }, [rawLead])
+
+  const scoreBreakdown = useMemo(() => {
+    if (!lead) return []
+    if (Array.isArray(lead.score_breakdown) && lead.score_breakdown.length > 0) {
+      return lead.score_breakdown
+    }
+    if (Array.isArray(lead.score_reasons) && lead.score_reasons.length > 0) {
+      return lead.score_reasons
+    }
+    return []
+  }, [lead])
 
   if (!isOpen || !lead) return null
 
@@ -62,6 +80,7 @@ export default function LeadDetailDrawer({ lead, isOpen, onClose }) {
 
           <button
             onClick={onClose}
+            aria-label="Close drawer"
             style={{
               border: 'none',
               background: 'none',
@@ -83,18 +102,18 @@ export default function LeadDetailDrawer({ lead, isOpen, onClose }) {
           </p>
 
           <p>
-  <strong>Publication Time:</strong>{' '}
-  {lead?.published_at
-    ? new Date(lead.published_at).toLocaleString()
-    : '—'}
-</p>
+            <strong>Publication Time:</strong>{' '}
+            {lead?.published_at
+              ? new Date(lead.published_at).toLocaleString()
+              : '—'}
+          </p>
 
-         <p>
-  <strong>Discovery Time:</strong>{' '}
-  {lead?.discovered_at
-    ? new Date(lead.discovered_at).toLocaleString()
-    : '—'}
-</p>
+          <p>
+            <strong>Discovery Time:</strong>{' '}
+            {lead?.discovered_at
+              ? new Date(lead.discovered_at).toLocaleString()
+              : '—'}
+          </p>
 
           <p>
             <strong>Source URL:</strong>{' '}
@@ -128,50 +147,56 @@ export default function LeadDetailDrawer({ lead, isOpen, onClose }) {
           <h3>Associated Contacts</h3>
 
           {lead.contacts?.length ? (
-            lead.contacts.map((contact, index) => (
-              <div
-                key={index}
-                style={{
-                  border: '1px solid #e5e7eb',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  marginBottom: '10px'
-                }}
-              >
-                <p>
-                  <strong>Name:</strong>{' '}
-                  {displayValue(contact.name)}
-                </p>
+            lead.contacts.map((contact, index) => {
+              const email = contact.email || contact.methods?.find((m) => m.kind === 'email')?.value
+              const phone = contact.phone || contact.methods?.find((m) => m.kind === 'phone')?.value
+              const isVerified = contact.verified || contact.methods?.some((m) => m.verified_status === 'verified')
 
-                <p>
-                  <strong>Role:</strong>{' '}
-                  {displayValue(contact.role)}
-                </p>
-
-                <p>
-                  <strong>Email:</strong>{' '}
-                  {displayValue(contact.email)}
-                </p>
-
-                <p>
-                  <strong>Phone:</strong>{' '}
-                  {displayValue(contact.phone)}
-                </p>
-
-                <span
+              return (
+                <div
+                  key={index}
                   style={{
-                    background: contact.verified
-                      ? '#dcfce7'
-                      : '#f3f4f6',
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    fontSize: '12px'
+                    border: '1px solid #e5e7eb',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '10px'
                   }}
                 >
-                  {contact.verified ? 'Verified' : 'Unverified'}
-                </span>
-              </div>
-            ))
+                  <p>
+                    <strong>Name:</strong>{' '}
+                    {displayValue(contact.name)}
+                  </p>
+
+                  <p>
+                    <strong>Role:</strong>{' '}
+                    {displayValue(contact.role || contact.role_title)}
+                  </p>
+
+                  <p>
+                    <strong>Email:</strong>{' '}
+                    {displayValue(email)}
+                  </p>
+
+                  <p>
+                    <strong>Phone:</strong>{' '}
+                    {displayValue(phone)}
+                  </p>
+
+                  <span
+                    style={{
+                      background: isVerified
+                        ? '#dcfce7'
+                        : '#f3f4f6',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    {isVerified ? 'Verified' : 'Unverified'}
+                  </span>
+                </div>
+              )
+            })
           ) : (
             <p>—</p>
           )}
@@ -181,36 +206,49 @@ export default function LeadDetailDrawer({ lead, isOpen, onClose }) {
         <section style={{ marginBottom: '24px' }}>
           <h3>Score Breakdown</h3>
 
-          {lead.score_breakdown?.length ? (
-            lead.score_breakdown.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  borderBottom: '1px solid #eee',
-                  padding: '8px 0'
-                }}
-              >
-                <p>
-                  <strong>Factor:</strong>{' '}
-                  {displayValue(item.factor)}
-                </p>
+          {scoreBreakdown.length ? (
+            scoreBreakdown.map((item, index) => {
+              const factor = item.factor || item.name || 'Factor'
+              const score = item.score ?? item.points ?? item.weight
+              const reasonCode = item.reason_code || item.code
+              const explanation = item.explanation || item.reason || item.message
 
-                <p>
-                  <strong>Score:</strong>{' '}
-                  {displayValue(item.score)}
-                </p>
+              return (
+                <div
+                  key={index}
+                  style={{
+                    borderBottom: '1px solid #eee',
+                    padding: '8px 0'
+                  }}
+                >
+                  <p>
+                    <strong>Factor:</strong>{' '}
+                    {displayValue(factor)}
+                  </p>
 
-                <p>
-                  <strong>Reason Code:</strong>{' '}
-                  {displayValue(item.reason_code)}
-                </p>
+                  {score !== undefined && (
+                    <p>
+                      <strong>Score:</strong>{' '}
+                      {displayValue(score)}
+                    </p>
+                  )}
 
-                <p>
-                  <strong>Explanation:</strong>{' '}
-                  {displayValue(item.explanation)}
-                </p>
-              </div>
-            ))
+                  {reasonCode && (
+                    <p>
+                      <strong>Reason Code:</strong>{' '}
+                      {displayValue(reasonCode)}
+                    </p>
+                  )}
+
+                  {explanation && (
+                    <p>
+                      <strong>Explanation:</strong>{' '}
+                      {displayValue(explanation)}
+                    </p>
+                  )}
+                </div>
+              )
+            })
           ) : (
             <p>—</p>
           )}
