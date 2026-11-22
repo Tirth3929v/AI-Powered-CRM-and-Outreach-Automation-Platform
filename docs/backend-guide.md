@@ -2,6 +2,28 @@
 
 Welcome to the backend engineering team! This guide explains our architecture, direct SQL conventions, and development workflow.
 
+## Campaign CRUD API
+
+Admins and campaign managers can manage campaigns with a bearer token. The campaign summary contains `id`, `name`, `purpose`, `status`, and `daily_limit`.
+
+| Method | Endpoint | Successful response |
+| --- | --- | --- |
+| POST | `/api/v1/campaigns` | `201` and the new campaign summary |
+| GET | `/api/v1/campaigns` | `200` and an array of summaries |
+| GET | `/api/v1/campaigns/{id}` | `200` and one summary |
+| PATCH | `/api/v1/campaigns/{id}` | `200` and the updated summary |
+| DELETE | `/api/v1/campaigns/{id}` | `204` with an empty body |
+
+To create a campaign, send a nonblank name (up to 255 characters) and purpose. For example:
+
+```json
+{"name": "Campus outreach", "purpose": "Invite employers to the placement drive"}
+```
+
+The example creates a campaign with status `draft` and a daily limit of `50`. The API records the signed-in user as `created_by`. Allowed statuses are `draft`, `active`, `paused`, and `completed`. A supplied `daily_limit` must be a positive PostgreSQL integer (at most 2,147,483,647).
+
+PATCH accepts one or more editable fields. For example, `{"status": "paused"}` preserves the campaign's name, purpose, and daily limit. Invalid input or a malformed UUID returns `422`. A valid UUID with no matching campaign returns `404` on GET, PATCH, or DELETE. Deleting a campaign referenced by protected outreach history returns `409`.
+
 ---
 
 ## 1. Tech Stack & Engineering Principles
