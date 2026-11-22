@@ -321,3 +321,105 @@ summary = client.usage_summary()
 ```
 
 Tests: `GEMINI_MOCK_MODE=true pytest -v ai/evals/test_usage.py` (17 passed, as reported for this task).
+
+
+---
+
+## 10. n8n Payload Fix Suggester (AI-18)
+
+File: `ai/diagnosis/payload_fixer.py`
+
+The `suggest_payload_fix()` function analyzes failed JSON payloads and error messages using Gemini Flash. It suggests safe payload corrections or retry parameters without executing any changes.
+
+### Features
+
+- Supports generic JSON payloads, not just scraper data.
+- Identifies incorrect data types and nested field errors.
+- Suggests safe conversions, such as `"20"` to `20`.
+- Reports missing or uncertain values in `needs_human_input`.
+- Never invents missing emails, IDs, URLs, or other unknown values.
+- Validates retry parameters and limits suggested batch sizes to 200.
+- Blocks retry suggestions for `send_timeout`, `provider_rejection`, and `permanent_provider_rejection`.
+- Redacts sensitive information before sending data to Gemini.
+- Returns a safe fallback if Gemini fails or times out.
+- Never modifies the original payload or executes retries.
+
+### Usage
+
+```python
+from ai.diagnosis.payload_fixer import suggest_payload_fix
+
+payload = {"age": "20"}
+
+result = suggest_payload_fix(
+    payload,
+    "Expected integer for field age",
+    category="invalid_input",
+)
+
+print(result)
+```
+
+The function returns a dictionary containing:
+
+| Field | Description |
+|---|---|
+| `summary` | Explanation of the payload issue |
+| `corrected_payload` | Proposed corrected JSON, or `None` |
+| `changes` | Accepted field-level changes with `path`, `issue`, and `new_value` |
+| `needs_human_input` | Fields or issues requiring manual review |
+| `retry_parameters` | Validated retry suggestions, or `None` |
+
+### Safety and Limitations
+
+Only supported, value-preserving type conversions are applied to the proposed payload. Missing fields and uncertain corrections, including date-format changes, require human review.
+
+In mock mode, the function returns a manual-review response without calling Gemini. Live Gemini behavior requires separate integration testing.
+
+The module does not access the backend or database, send messages, execute retries, or submit corrected payloads.
+
+### Testing
+
+Run the payload fixer tests:
+
+```bash
+python -m pytest ai/evals/test_payload_fixer.py -v
+```
+
+Run the complete AI evaluation suite:
+
+```bash
+python -m pytest ai/evals/ -q
+```
+
+The tests cover type conversions, missing fields, nested arrays, uncertain dates, blocked retry categories, retry-parameter validation, and API failure handling.
+
+---
+
+## 11. Selector Suggester for Broken HTML (AI-17)
+
+File: `ai/diagnosis/selector_suggester.py`
+
+When a scraper's CSS selector stops matching, `suggest_selector(html, expired_selector, field_description)` asks the model for a replacement and **only accepts it after verifying it against the real HTML**.
+
+- **Verification:** the suggestion is checked with BeautifulSoup (`html.parser`) and must match **exactly 1 element**. Suggestions matching 0 or more than 1 element, or that are not valid CSS, are rejected.
+- **Retry:** a rejected suggestion is retried (default `max_attempts=2`) with feedback on what was wrong, such as "matched 3 elements".
+- **Result:** a `SelectorSuggestion` with `verified`, `selector` (set only when verified), `proposed_selector`, `match_count`, `reason`, `attempts`, `matched_text` and `warnings`.
+- **Never raises** for API failures, bad model output, invalid selectors or a missing parser. Those return a rejected result. Error text is not copied into the result, because request errors can contain the API key.
+- **Untrusted input:** the HTML is wrapped in `<BROKEN_HTML>` delimiters, checked with `injection_guard`, and capped at 50,000 characters (the scraper snapshot cap). The same capped HTML is used for verification.
+- **Resilience warnings:** positional selectors (`:nth-child`), auto-generated class names and long chains are accepted if they match exactly 1 element but come back with a warning.
+- **Suggestions only:** the module never edits a scraper or retries a scrape.
+- **Mock mode:** `GeminiClient` mock mode returns an email draft with no `selector`, so the suggestion is rejected. Use a stub client in tests.
+- **Dependency:** `beautifulsoup4` is not yet in `backend/requirements.txt` (lead-approved file). Until a lead adds it, verification is unavailable and the tests skip.
+
+```python
+from ai.diagnosis.selector_suggester import suggest_selector
+
+result = suggest_selector(html_snapshot, "h2.job-title-old", "job title")
+if result.verified:
+    new_selector = result.selector          # matched exactly 1 element
+else:
+    print(result.reason)                    # e.g. "Rejected: selector matched 0 elements; exactly 1 is required."
+```
+
+Tests: `pytest ai/evals/test_selector_suggester.py` (5 broken HTML snippets plus retry, failure and safety cases).
