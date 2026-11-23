@@ -114,3 +114,14 @@ Before starting any task, carefully read [CONTRIBUTING.md](CONTRIBUTING.md).
 | **Researcher** | `researcher@example.com` | `Password123!` | Review leads, claim leads, enrich, verify |
 | **Campaign Manager**| `campaigns@example.com` | `Password123!` | Review AI drafts, approve, dispatch outreach |
 | **Developer** | `developer@example.com` | `Password123!` | View Error Center, replay transient jobs |
+### Step 5: Running Backend API Tests
+
+Run backend API tests from the repository root: `python -m pytest backend/tests -q`
+
+Run the complete project test suite: `python -m pytest -q`
+
+Test environment:
+- ENVIRONMENT, SECRET_KEY and GEMINI_MOCK_MODE are configured with test values in backend/tests/conftest.py.
+- DATABASE_URL is optional. Database integration tests are skipped when it is not configured.
+- If DATABASE_URL is configured, use a disposable test database, never production.
+- Never commit real credentials or secrets.
