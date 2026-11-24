@@ -154,14 +154,21 @@ def test_researcher_cannot_approve_draft(client, authenticated_user):
 
 # ---------------- CAMPAIGNS ----------------
 
-def test_list_campaigns_success(client, authenticated_user):
+def test_list_campaigns_success(client, authenticated_user, monkeypatch):
     authenticated_user(ADMIN)
+    campaign = {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "name": "Placement drive",
+        "purpose": "Invite employers",
+        "status": "active",
+        "daily_limit": 50,
+    }
+    monkeypatch.setattr("backend.app.repositories.campaigns_repo.list_campaigns", lambda: [campaign])
 
     response = client.get("/api/v1/campaigns")
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
-    assert response.json()[0]["status"] == "active"
+    assert response.json() == [campaign]
 
 
 def test_generate_campaign_draft_success(client, authenticated_user):
