@@ -86,7 +86,7 @@ Every new intern starts with at least one **Size S** warm-up task to guarantee a
 | **BE-25** | Scraper: Internshala | M | `automation/scrapers/sources/internshala.py` |
 | **BE-26** | Scraper: Naukri | M | `automation/scrapers/sources/naukri.py` |
 | **BE-27** | Scraper: Apna | M | `automation/scrapers/sources/apna.py` |
-| **BE-28** | Scraper: WorkIndia | M | `automation/scrapers/sources/workindia.py` |
+| **BE-28** | Campaign CRUD API (assigned to Manoj) | M | `backend/app/api/v1/campaigns.py`, `backend/app/repositories/campaigns_repo.py`, `backend/tests/test_campaigns.py` |
 | **BE-29** | Scraper: Shine | M | `automation/scrapers/sources/shine.py` |
 | **BE-30** | Scraper: Hackathons | M | `automation/scrapers/sources/hackathons.py` |
 | **BE-31** | Scraper: College & TPO directories | M | `automation/scrapers/sources/college_tpo.py` |
