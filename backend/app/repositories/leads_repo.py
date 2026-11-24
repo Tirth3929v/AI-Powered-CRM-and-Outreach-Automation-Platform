@@ -12,6 +12,21 @@ from psycopg.types.json import Jsonb
 from backend.app.core.db import get_conn
 
 
+SORT_COLUMNS = {
+    "discovered_at": "o.discovered_at",
+    "score": "COALESCE(dqs.score, 0)",
+    "experience_min": "o.experience_min",
+    "experience_max": "o.experience_max",
+    "organization_name": "org.name",
+    "title": "o.title",
+}
+
+SORT_ORDERS = {
+    "asc": "ASC",
+    "desc": "DESC",
+}
+
+
 def list_leads(
     filters: Optional[Dict[str, Any]] = None,
     page: int = 1,
@@ -35,7 +50,10 @@ def list_leads(
     page = max(1, page)
     page_size = max(1, min(page_size, 100))
     offset = (page - 1) * page_size
-
+    sort_by = filters.get("sort_by", "discovered_at")
+    sort_order = filters.get("sort_order", "desc")
+    sort_column = SORT_COLUMNS.get(sort_by, "o.discovered_at")
+    sort_direction = SORT_ORDERS.get(sort_order, "DESC")
     source = filters.get("source", filters.get("source_id"))
     status = filters.get("status")
     band = filters.get("score_band", filters.get("band"))
@@ -60,7 +78,7 @@ def list_leads(
         search_pattern, search_pattern, search_pattern,
     )
 
-    query = """
+    query = f"""
         SELECT
             o.id,
             org.name AS organization_name,
@@ -105,7 +123,7 @@ def list_leads(
                 OR o.title ILIKE %s
                 OR org.name ILIKE %s
             )
-        ORDER BY o.discovered_at DESC, o.id ASC
+        ORDER BY {sort_column} {sort_direction}, o.id ASC
         LIMIT %s OFFSET %s
     """
 

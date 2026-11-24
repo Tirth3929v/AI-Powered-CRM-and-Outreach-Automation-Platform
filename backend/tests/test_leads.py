@@ -88,6 +88,50 @@ def test_list_leads_rejects_invalid_experience_range(client):
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"page": 0},
+        {"page": -1},
+        {"page_size": 0},
+        {"page_size": 101},
+        {"status": "invalid_status"},
+        {"score_band": "invalid_band"},
+        {"sort_by": "title; DROP TABLE users;--"},
+        {"sort_order": "random"},
+    ],
+)
+def test_list_leads_rejects_invalid_parameters(client, params):
+    response = client.get("/api/v1/leads", params=params)
+
+    assert response.status_code == 422
+
+
+def test_list_leads_supports_custom_pagination(client):
+    with patch(
+        "backend.app.api.v1.leads.leads_repo.list_leads",
+        return_value=([], 35),
+        create=True,
+    ) as mock_list:
+        response = client.get(
+            "/api/v1/leads",
+            params={"page": 2, "page_size": 10},
+        )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["page"] == 2
+    assert data["page_size"] == 10
+    assert data["total"] == 35
+    assert data["total_pages"] == 4
+
+    mock_list.assert_called_once()
+    assert mock_list.call_args.kwargs["page"] == 2
+    assert mock_list.call_args.kwargs["page_size"] == 10
+
+
 def test_get_lead_by_id_uses_repository(client):
     lead = SAMPLE_LEADS[0]
 
