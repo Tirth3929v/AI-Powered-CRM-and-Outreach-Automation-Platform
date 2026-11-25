@@ -1,11 +1,17 @@
+
 """
 FastAPI Main Application Entrypoint.
-Initializes middleware, routers, and lifecycle events.
+Initializes middleware, routers, and centralized error handling.
 """
 
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.app.core.config import get_settings
 from backend.app.core.logging import CorrelationIdMiddleware, setup_logging
@@ -21,13 +27,38 @@ from backend.app.api.v1.suppression import router as suppression_router
 from backend.app.api.v1.webhooks import router as webhooks_router
 from backend.app.api.v1.error_center import router as error_center_router
 
+logger = logging.getLogger(__name__)
+
+
+def error_response(
+    status_code: int,
+    code: str,
+    message: str,
+    correlation_id: str | None,
+):
+    """Create a standard API error response with correlation ID header."""
+    body = {
+        "status": status_code,
+        "code": code,
+        "message": message,
+    }
+
+    headers = {}
+    if correlation_id:
+        body["correlation_id"] = correlation_id
+        headers["X-Correlation-ID"] = correlation_id
+
+    return JSONResponse(
+        status_code=status_code,
+        content=body,
+        headers=headers,
+    )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup actions
     setup_logging()
     yield
-    # Shutdown actions
 
 
 def create_application() -> FastAPI:
@@ -37,24 +68,104 @@ def create_application() -> FastAPI:
         title="AI-Powered Lead Intelligence, CRM & Outreach Automation API",
         description="Unified backend platform orchestrating CRM pipeline, AI drafts, and controlled outreach.",
         version=settings.APP_VERSION,
-        lifespan=lifespan
+        lifespan=lifespan,
     )
 
-    # Correlation ID Middleware (Adds X-Correlation-ID to all responses)
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request,
+        exc: RequestValidationError,
+    ):
+        """Return a safe, consistent response for invalid request data."""
+        return error_response(
+            status_code=422,
+            code="VALIDATION_ERROR",
+            message="Request validation failed. Please check the supplied data.",
+            correlation_id=getattr(request.state, "correlation_id", None),
+        )
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(
+        request: Request,
+        exc: StarletteHTTPException,
+    ):
+        """Convert HTTP errors into safe, standard API error responses."""
+        correlation_id = getattr(request.state, "correlation_id", None)
+
+        code_by_status = {
+            400: "BAD_REQUEST",
+            401: "UNAUTHORIZED",
+            403: "FORBIDDEN",
+            404: "RESOURCE_NOT_FOUND",
+            409: "RESOURCE_CONFLICT",
+            422: "VALIDATION_ERROR",
+        }
+
+        message_by_status = {
+            400: "The request is invalid.",
+            401: "Authentication is required.",
+            403: "You do not have permission to perform this action.",
+            404: "The requested resource was not found.",
+            409: "The request conflicts with the current resource state.",
+            422: "Request validation failed. Please check the supplied data.",
+        }
+
+        safe_messages = {
+            "Lead not found.",
+            "Email not found.",
+            "Real email verification provider is not configured.",
+        }
+
+        detail = exc.detail
+
+        if isinstance(detail, str) and detail in safe_messages:
+            message = detail
+        else:
+            message = message_by_status.get(
+                exc.status_code,
+                "The request could not be completed.",
+            )
+
+        return error_response(
+            status_code=exc.status_code,
+            code=code_by_status.get(exc.status_code, "HTTP_ERROR"),
+            message=message,
+            correlation_id=correlation_id,
+        )
+
+    @app.exception_handler(Exception)
+    async def unexpected_exception_handler(
+        request: Request,
+        exc: Exception,
+    ):
+        """Log unexpected errors internally without exposing technical details."""
+        correlation_id = getattr(request.state, "correlation_id", None)
+
+        logger.exception(
+            "Unexpected application error",
+            extra={"correlation_id": correlation_id},
+        )
+
+        return error_response(
+            status_code=500,
+            code="INTERNAL_SERVER_ERROR",
+            message="An unexpected server error occurred. Please try again later.",
+            correlation_id=correlation_id,
+        )
+
     app.add_middleware(CorrelationIdMiddleware)
 
-    # CORS Middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
-        expose_headers=["X-Correlation-ID"]
+        expose_headers=["X-Correlation-ID"],
     )
 
-    # Mount API v1 Routers
     api_v1_prefix = "/api/v1"
+
     app.include_router(health_router, prefix=api_v1_prefix)
     app.include_router(auth_router, prefix=api_v1_prefix)
     app.include_router(leads_router, prefix=api_v1_prefix)
@@ -67,14 +178,13 @@ def create_application() -> FastAPI:
     app.include_router(webhooks_router, prefix=api_v1_prefix)
     app.include_router(error_center_router, prefix=api_v1_prefix)
 
-    # Root redirect / health convenience
     @app.get("/", tags=["Root"])
     def root():
         return {
             "name": "AI CRM & Outreach Automation API",
             "version": settings.APP_VERSION,
             "docs": "/docs",
-            "health": f"{api_v1_prefix}/health"
+            "health": f"{api_v1_prefix}/health",
         }
 
     return app

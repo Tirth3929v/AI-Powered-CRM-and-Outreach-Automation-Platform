@@ -158,8 +158,9 @@ def test_get_missing_lead_returns_standard_404(client):
 
     assert response.status_code == 404
 
-    data = response.json()["detail"]
+    data = response.json()
 
     assert data["status"] == 404
     assert data["code"] == "RESOURCE_NOT_FOUND"
     assert "message" in data
+    assert "correlation_id" in data
