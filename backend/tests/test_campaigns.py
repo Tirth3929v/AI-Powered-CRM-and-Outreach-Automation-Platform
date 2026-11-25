@@ -63,7 +63,7 @@ def test_unknown_campaign(client, method, repo_method):
         body = {"status": "active"} if method == "PATCH" else None
         response = client.request(method, f"{URL}/{CID}", headers=auth(), json=body)
     assert response.status_code == 404
-    assert response.json()["detail"]["code"] == "RESOURCE_NOT_FOUND"
+    assert response.json()["code"] == "RESOURCE_NOT_FOUND"
 
 
 @pytest.mark.parametrize("body", [
@@ -105,7 +105,7 @@ def test_cannot_delete_referenced_campaign(client):
     with patch.object(campaigns_repo, "delete_campaign", side_effect=ForeignKeyViolation()):
         response = client.delete(f"{URL}/{CID}", headers=auth())
     assert response.status_code == 409
-    assert response.json()["detail"]["code"] == "RESOURCE_CONFLICT"
+    assert response.json()["code"] == "RESOURCE_CONFLICT"
 
 
 @pytest.fixture
