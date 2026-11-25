@@ -2,6 +2,28 @@
 
 Welcome to the backend engineering team! This guide explains our architecture, direct SQL conventions, and development workflow.
 
+## Campaign CRUD API
+
+Admins and campaign managers can manage campaigns with a bearer token. The campaign summary contains `id`, `name`, `purpose`, `status`, and `daily_limit`.
+
+| Method | Endpoint | Successful response |
+| --- | --- | --- |
+| POST | `/api/v1/campaigns` | `201` and the new campaign summary |
+| GET | `/api/v1/campaigns` | `200` and an array of summaries |
+| GET | `/api/v1/campaigns/{id}` | `200` and one summary |
+| PATCH | `/api/v1/campaigns/{id}` | `200` and the updated summary |
+| DELETE | `/api/v1/campaigns/{id}` | `204` with an empty body |
+
+To create a campaign, send a nonblank name (up to 255 characters) and purpose. For example:
+
+```json
+{"name": "Campus outreach", "purpose": "Invite employers to the placement drive"}
+```
+
+The example creates a campaign with status `draft` and a daily limit of `50`. The API records the signed-in user as `created_by`. Allowed statuses are `draft`, `active`, `paused`, and `completed`. A supplied `daily_limit` must be a positive PostgreSQL integer (at most 2,147,483,647).
+
+PATCH accepts one or more editable fields. For example, `{"status": "paused"}` preserves the campaign's name, purpose, and daily limit. Invalid input or a malformed UUID returns `422`. A valid UUID with no matching campaign returns `404` on GET, PATCH, or DELETE. Deleting a campaign referenced by protected outreach history returns `409`.
+
 ---
 
 ## 1. Tech Stack & Engineering Principles
@@ -21,34 +43,34 @@ Welcome to the backend engineering team! This guide explains our architecture, d
 
 ```
 backend/
-├── Dockerfile
-├── requirements.txt         # (LEAD-ONLY) Root dependencies
-├── app/
-│   ├── main.py              # FastAPI application entry point & router mounting
-│   ├── core/
-│   │   ├── config.py        # Settings loaded from environment variables
-│   │   ├── db.py            # psycopg_pool connection pool & transaction helper
-│   │   ├── security.py      # JWT creation, password hashing, role guard dependencies
-│   │   ├── logging.py       # JSON logging & X-Correlation-ID middleware
-│   │   ├── errors.py        # Centralized HTTP exception classes
-│   │   └── retry.py         # Exponential backoff with jitter helper
-│   ├── api/v1/              # Endpoint route controllers
-│   │   ├── auth.py
-│   │   ├── leads.py
-│   │   ├── enrichment.py
-│   │   ├── verification.py
-│   │   ├── campaigns.py
-│   │   ├── approvals.py
-│   │   ├── suppression.py
-│   │   ├── webhooks.py
-│   │   └── health.py
-│   ├── services/            # Business logic (dedup, scoring, audit, dispatch)
-│   ├── repositories/        # Raw SQL queries (leads_repo, contacts_repo, etc.)
-│   ├── schemas/             # Pydantic request/response models
-│   └── integrations/        # External clients (ContactOut, Snov, Verifier, Email)
-└── tests/
-    ├── conftest.py
-    └── test_health.py
+â”œâ”€â”€ Dockerfile
+â”œâ”€â”€ requirements.txt         # (LEAD-ONLY) Root dependencies
+â”œâ”€â”€ app/
+â”‚   â”œâ”€â”€ main.py              # FastAPI application entry point & router mounting
+â”‚   â”œâ”€â”€ core/
+â”‚   â”‚   â”œâ”€â”€ config.py        # Settings loaded from environment variables
+â”‚   â”‚   â”œâ”€â”€ db.py            # psycopg_pool connection pool & transaction helper
+â”‚   â”‚   â”œâ”€â”€ security.py      # JWT creation, password hashing, role guard dependencies
+â”‚   â”‚   â”œâ”€â”€ logging.py       # JSON logging & X-Correlation-ID middleware
+â”‚   â”‚   â”œâ”€â”€ errors.py        # Centralized HTTP exception classes
+â”‚   â”‚   â””â”€â”€ retry.py         # Exponential backoff with jitter helper
+â”‚   â”œâ”€â”€ api/v1/              # Endpoint route controllers
+â”‚   â”‚   â”œâ”€â”€ auth.py
+â”‚   â”‚   â”œâ”€â”€ leads.py
+â”‚   â”‚   â”œâ”€â”€ enrichment.py
+â”‚   â”‚   â”œâ”€â”€ verification.py
+â”‚   â”‚   â”œâ”€â”€ campaigns.py
+â”‚   â”‚   â”œâ”€â”€ approvals.py
+â”‚   â”‚   â”œâ”€â”€ suppression.py
+â”‚   â”‚   â”œâ”€â”€ webhooks.py
+â”‚   â”‚   â””â”€â”€ health.py
+â”‚   â”œâ”€â”€ services/            # Business logic (dedup, scoring, audit, dispatch)
+â”‚   â”œâ”€â”€ repositories/        # Raw SQL queries (leads_repo, contacts_repo, etc.)
+â”‚   â”œâ”€â”€ schemas/             # Pydantic request/response models
+â”‚   â””â”€â”€ integrations/        # External clients (ContactOut, Snov, Verifier, Email)
+â””â”€â”€ tests/
+    â”œâ”€â”€ conftest.py
+    â””â”€â”€ test_health.py
 ```
 
 ---
@@ -127,3 +149,35 @@ pytest backend/tests
 - Redacts sensitive information, including email addresses, phone numbers, and authentication tokens, before persistence.
 - Uses the caller's database transaction; the service does not commit or roll back independently.
 - **Tests:** Run `python -m pytest backend/tests -v`.
+
+## Lead List API: Pagination, Filtering & Sorting (BE-30)
+
+**Endpoint:** `GET /api/v1/leads`
+
+The endpoint returns a paginated response containing `items`, `total`, `page`, `page_size`, and `total_pages`.
+
+### Pagination
+- `page`: 1-based page number; defaults to `1`; minimum value is `1`.
+- `page_size`: defaults to `25`; allowed range is `1`–`100`.
+- Offset is calculated as `(page - 1) * page_size`.
+- `total` represents the number of records matching the filters.
+
+### Filters
+The endpoint supports these optional query parameters:
+- `source`
+- `experience_min` and `experience_max` (non-negative values; minimum must not exceed maximum)
+- `score_band`: `high`, `medium`, `low`, or `suppressed`
+- `status`: `new`, `needs_enrichment`, `verified`, `draft_ready`, `approved`, `sent`, or `closed`
+- `assigned_to`
+- `search`: searches lead titles and organization names.
+
+### Sorting
+- `sort_by` defaults to `discovered_at`.
+- Supported fields: `discovered_at`, `score`, `experience_min`, `experience_max`, `organization_name`, and `title`.
+- `sort_order` defaults to `desc`; supported values are `asc` and `desc`.
+- Sorting uses predefined SQL column and direction allowlists. `o.id ASC` is used as a stable tie-breaker.
+
+### SQL Safety
+- User-provided filter values are passed through parameterized SQL queries.
+- Sort column names and directions are selected only from predefined allowlists.
+- Never interpolate raw user input into SQL statements.
