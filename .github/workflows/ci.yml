@@ -11,13 +11,13 @@ jobs:
     name: Backend & AI Quality Checks
     runs-on: ubuntu-latest
     env:
-      CAMPAIGN_TEST_DATABASE_URL: postgresql://campaign_ci:ci_only@127.0.0.1:5433/campaign_test
+      CAMPAIGN_TEST_DATABASE_URL: postgresql://campaign_ci:${{ github.run_id }}-${{ github.run_attempt }}@127.0.0.1:5433/campaign_test
     services:
       campaign-postgres:
         image: postgres:16-alpine
         env:
           POSTGRES_USER: campaign_ci
-          POSTGRES_PASSWORD: ci_only
+          POSTGRES_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
           POSTGRES_DB: campaign_test
         ports:
           - '127.0.0.1:5433:5432'
