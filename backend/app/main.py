@@ -12,6 +12,7 @@ from backend.app.core.logging import CorrelationIdMiddleware, setup_logging
 from backend.app.api.v1.health import router as health_router
 from backend.app.api.v1.auth import router as auth_router
 from backend.app.api.v1.leads import router as leads_router
+from backend.app.api.v1.lead_status import router as lead_status_router
 from backend.app.api.v1.enrichment import router as enrichment_router
 from backend.app.api.v1.verification import router as verification_router
 from backend.app.api.v1.campaigns import router as campaigns_router
@@ -57,6 +58,7 @@ def create_application() -> FastAPI:
     app.include_router(health_router, prefix=api_v1_prefix)
     app.include_router(auth_router, prefix=api_v1_prefix)
     app.include_router(leads_router, prefix=api_v1_prefix)
+    app.include_router(lead_status_router, prefix=api_v1_prefix)
     app.include_router(enrichment_router, prefix=api_v1_prefix)
     app.include_router(verification_router, prefix=api_v1_prefix)
     app.include_router(campaigns_router, prefix=api_v1_prefix)
