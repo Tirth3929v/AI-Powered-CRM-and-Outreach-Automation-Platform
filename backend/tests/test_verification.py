@@ -188,7 +188,10 @@ def test_verify_endpoint_returns_404_for_missing_lead(client):
             response = client.post("/api/v1/leads/missing-lead/verify")
 
         assert response.status_code == 404
-        assert response.json()["detail"] == "Lead not found."
+        data = response.json()
+        assert data["status"] == 404
+        assert data["code"] == "RESOURCE_NOT_FOUND"
+        assert data["message"] == "Lead not found."
     finally:
         app.dependency_overrides.pop(get_current_user, None)
 
