@@ -404,3 +404,21 @@ Colors, score bands, and radii are defined in `src/styles/tokens.css`:
 - The **Confirm & Deduct Credits** button is disabled, with a clear `role="alert"` reason, when the estimated cost exceeds the remaining daily or monthly budget, when no records are selected, or when the provider is unsupported. The same guard is repeated inside the click handler.
 - The component makes no API calls itself. The parent should start enrichment only from `onConfirm`; Escape, the X button, the backdrop and Cancel only call `onClose`.
 - Props: `isOpen`, `onClose`, `onConfirm`, `provider`, `selectedRecords` or `selectedCount`, `estimatedCredits`, `remainingDailyCredits`, `remainingMonthlyCredits`.
+
+### FE-28: Automation Error Center Page
+- **File**: `src/pages/ErrorCenter/index.jsx` (tests in `ErrorCenter.test.jsx`).
+- Table of automation errors with Workflow, Job ID, Correlation ID, Failed Step, Error Category, Retry Count, Next Retry At, Owner, plus a Status badge. Filterable by error category and by status (`open`, `retrying`, `resolved`).
+- A slide-over panel (Escape, the X button and the backdrop close it) shows the redacted stack trace, payload snapshot, AI-suggested root cause and a resolution notes input.
+- **Replay Job** is disabled for send timeouts and provider rejections (`send_timeout`, `provider_rejection`, `permanent_provider_rejection`), for other categories the playbook marks as not replayable, when the backend sets `replay_eligible: false`, while a job is already `retrying`, when it is `resolved`, and for roles without `replay_errors`. The reason is shown under the button.
+- Uses `GET /error_center` and `POST /error_center/{id}/replay`. Visible to `developer` and `admin` only. Falls back to sample data when `VITE_USE_MOCKS=true` or the backend is unreachable, with a visible banner.
+- **Known gaps**: `/error_center` is not in `contracts/openapi.yaml` yet; the API has no stack-trace field (the page shows `redacted_message`), no endpoint to save resolution notes or mark an error `resolved` (notes are saved in the browser session only, via `sessionStorage`), and no server-side filtering.
+
+### FE-30: Admin Users and Roles Management
+- **File**: `src/pages/Admin/Users.jsx`
+- **Route**: `/admin` (wired in `App.jsx`)
+- Admin-only: any other role sees a "403 - No Access" page (uses `can(role, 'manage_users')` from `utils/roles.js`).
+- Table of team members with name, email, role dropdown (`admin`, `researcher`, `campaign_manager`, `developer`), status badge and an active/inactive switch.
+- "Create User" opens a modal form. It validates a required name, a valid email and a unique email.
+- An admin cannot deactivate their own account: their switch is disabled, with a tooltip.
+- Uses local mock data, because `contracts/openapi.yaml` has no `/users` endpoints yet. Replace the handlers with `apiClient` calls once the backend contract exists.
+- Props: `currentUser` (falls back to `auth_user` in localStorage).
